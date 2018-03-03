@@ -1,4 +1,4 @@
-# stout
+# Stout
 _A web application framework designed with stout models in mind._
 
 What's a stout model? It's a framework pattern in which models hold as much as they can.
