@@ -1,4 +1,21 @@
 # stout
+_A web application framework designed with stout models in mind._
+
+What's a stout model? It's a framework pattern in which models hold as much as they can.
+
+What do Stout's models handle?
+- business logic
+- defining their relevant routes
+- controller-ish actions
+- rendering
+- all of the other things!
+
+If that's too much for _you_, never fear! You can still use Stout!
+Because it's an opinionated, but _flexible_ framework, you can:
+- define your routes outside of the models
+- write as many controllers, controller factories, and controller factory builders as your heart desires
+- use ecr template files! (no disappointed glances for doing this, seriously!)
+
 
 ## example
 
