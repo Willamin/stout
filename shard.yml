@@ -6,7 +6,7 @@ authors:
 
 targets:
   stout-example:
-    main: src/app.cr
+    main: example/app.cr
 
 crystal: 24.1
 

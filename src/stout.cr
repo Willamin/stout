@@ -74,9 +74,5 @@ module Stout
       ECR.embed({{path}}, content)
       content.to_s
     end
-
-    macro t(name)
-      Stout::Magic.ecrs("src/template/{{name.id}}.html.ecr")
-    end
   end
 end
