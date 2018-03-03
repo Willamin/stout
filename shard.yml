@@ -15,3 +15,5 @@ license: MIT
 dependencies:
   radix:
     github: luislavena/radix
+  morganite:
+    github: willamin/morganite

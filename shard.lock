@@ -1,5 +1,9 @@
 version: 1.0
 shards:
+  morganite:
+    github: willamin/morganite
+    commit: 6a48db463f069b7ee25a1bd65ab011f9a5ec4e14
+
   radix:
     github: luislavena/radix
     version: 0.3.8

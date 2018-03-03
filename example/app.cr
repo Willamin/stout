@@ -5,7 +5,7 @@ require "./model/*"
 
 server = Stout::Server.new
 
-server.get "/" { |c| c << "nothing here. try /hello" }
+Root.routes(server)
 Page.routes(server)
 
 server.listen
