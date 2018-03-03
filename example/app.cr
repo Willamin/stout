@@ -1,10 +1,6 @@
-module Stout::Magic
-  macro t(name)
-    Stout::Magic.ecrs({{__DIR__}} + "/template/{{name.id}}.html.ecr")
-  end
-end
-
 require "../src/stout"
+Stout::Magic.deft
+
 require "./model/*"
 
 server = Stout::Server.new
