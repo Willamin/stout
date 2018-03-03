@@ -17,11 +17,16 @@ module Stout
       @http.response << (something)
     end
 
+    def call_next
+      @http.call_next(@http)
+    end
+
     forward_missing_to @http
   end
 
   class Server
     include HTTP::Handler
+    property static_location = "static"
     property host = "0.0.0.0"
     property port = 8888
     property routes = {
@@ -39,10 +44,11 @@ module Stout
         HTTP::LogHandler.new,
         HTTP::CompressHandler.new,
         self,
-        HTTP::StaticFileHandler.new("."),
+        HTTP::StaticFileHandler.new(static_location),
       ])
 
       puts "Listening on http://#{host}:#{port}"
+      puts " static files at: #{static_location}"
       server.listen
     end
 
@@ -63,6 +69,8 @@ module Stout
       else
         call_next(context)
       end
+    rescue
+      call_next(context)
     end
   end
 
@@ -80,6 +88,10 @@ module Stout
         macro t(name)
           Stout::Magic.ecrs(\{{__DIR__}} + "/template/" + \{{name}} + ".html.ecr")
         end
+      end
+
+      class Stout::Server
+        @static_location = \{{__DIR__}} + "/static"
       end
     end
   end

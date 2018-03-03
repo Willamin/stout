@@ -11,13 +11,13 @@ class Page
     when "hello"
       Page.new(slug, t("hello"))
     else
-      Page.new(slug, "not found")
+      nil
     end
   end
 
   def self.routes(server)
-    server.get "/:page" { |c|
-      c << Page.find(c.params["page"]).content
-    }
+    server.get "/:page" do |c|
+      c << Page.find(c.params["page"]).not_nil!.content
+    end
   end
 end
