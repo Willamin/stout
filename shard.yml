@@ -5,7 +5,7 @@ authors:
   - Will Lewis <will@wflewis.com>
 
 targets:
-  stout:
+  stout-example:
     main: src/app.cr
 
 crystal: 24.1
