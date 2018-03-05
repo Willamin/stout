@@ -1,7 +1,11 @@
 require "morganite"
+require "markdown"
+
+alias M = Morganite::Morganite
 
 class Root
   include Stout::Magic
+
   @@content : String?
 
   def self.routes(server)
@@ -10,11 +14,22 @@ class Root
     end
   end
 
+  def navbar
+    M.new.div class: "navbar container" { yield }
+  end
+
   def render
     @@content unless @@content.nil?
 
+    begin
+      file = File.read({{__DIR__}} + "/../../README.md")
+      markdown = Markdown.to_html(file)
+    rescue e
+      puts e
+    end
+
     @@content =
-      Morganite::Morganite.yield {
+      M.yield {
         html {
           [
             head {
@@ -26,33 +41,13 @@ class Root
             },
             body {
               [
-                div class: "navbar container" {
+                navbar {
                   [
                     h1 { "Welcome to Stout!" },
                   ].join
                 },
                 div class: "main container" {
-                  div {
-                    [
-                      h1 { "Stout" },
-                      p { "<em>A web application framework designed with stout models in mind.</em>" },
-                      p { "What's a stout model? It's a framework pattern in which models hold as much as they can." },
-                      p { "What do Stout's models handle?" },
-                      ul { [
-                        li { "business logic" },
-                        li { "defining their relevant routes" },
-                        li { "controller-ish actions" },
-                        li { "rendering" },
-                        li { "all of the other things!" },
-                      ].join },
-                      p { "If that's too much for <em>you</em>, never fear! You can still use Stout! Because it's an opinionated, but <em>flexible</em> framework, you can:" },
-                      ul { [
-                        li { "define your routes outside of the models" },
-                        li { "write as many controllers, controller factories, and controller factory builders as your heart desires" },
-                        li { "use ecr template files! (no disappointed glances for doing this, seriously!)" },
-                      ].join },
-                    ].join
-                  }
+                  div { markdown }
                 },
               ].join
             },
