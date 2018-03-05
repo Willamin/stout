@@ -19,13 +19,14 @@ body {
 }
 
 .main {
-  padding-top: 1em;
+  padding-top: 1rem;
+  padding-bottom: 2rem;
 }
 
 .main > *{
-  margin-top: 1em;
-  padding: 2em;
-  padding-top: 0em;
+  margin-top: 1rem;
+  padding: 2rem;
+  padding-top: 0;
   background-color: #EEF4D4;
   box-shadow: 3px 3px 10px #331B12AA;
 }
