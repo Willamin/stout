@@ -18,6 +18,29 @@ class Root
     M.new.div class: "navbar container" { yield }
   end
 
+  def layout
+    M.yield {
+      html {
+        [
+          head {
+            [
+              title { "Welcome to Stout!" },
+              link(rel: "stylesheet", href: "/clean.css"),
+              link(rel: "stylesheet", href: "/app.css"),
+            ].join
+          },
+          body {
+            [
+              div class: "main container" {
+                div { yield }
+              },
+            ].join
+          },
+        ].join
+      }
+    }
+  end
+
   def render
     @@content unless @@content.nil?
 
@@ -28,32 +51,7 @@ class Root
       puts e
     end
 
-    @@content =
-      M.yield {
-        html {
-          [
-            head {
-              [
-                title { "Welcome to Stout!" },
-                link(rel: "stylesheet", href: "/clean.css"),
-                link(rel: "stylesheet", href: "/app.css"),
-              ].join
-            },
-            body {
-              [
-                navbar {
-                  [
-                    h1 { "Welcome to Stout!" },
-                  ].join
-                },
-                div class: "main container" {
-                  div { markdown }
-                },
-              ].join
-            },
-          ].join
-        }
-      }
+    @@content = layout { markdown.try &.split("<hr/>")[0] }
   end
 end
 

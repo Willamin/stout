@@ -16,6 +16,7 @@ Because it's an opinionated, but _flexible_ framework, you can:
 - write as many controllers, controller factories, and controller factory builders as your heart desires
 - use ecr template files! (no disappointed glances for doing this, seriously!)
 
+---
 
 ## example
 
