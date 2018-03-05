@@ -2,97 +2,10 @@ require "http/server"
 require "ecr"
 require "radix"
 
+require "./stout/*"
+
 alias Routes = Radix::Tree(Proc(Stout::Context, Nil))
 
 module Stout
   VERSION = {{ `shards version __DIR__`.chomp.stringify }}
-
-  class Context
-    @http : HTTP::Server::Context
-    property params : Hash(String, String)
-
-    def initialize(@http, @params); end
-
-    def <<(something)
-      @http.response << (something)
-    end
-
-    def call_next
-      @http.call_next(@http)
-    end
-
-    forward_missing_to @http
-  end
-
-  class Server
-    include HTTP::Handler
-    property static_location = "static"
-    property host = "0.0.0.0"
-    property port = 8888
-    property routes = {
-      get:  Routes.new,
-      post: Routes.new,
-    }
-
-    def get(path : String, &block : Stout::Context -> Nil)
-      routes[:get].add(path, block)
-    end
-
-    def listen
-      server = HTTP::Server.new(host, port, [
-        HTTP::ErrorHandler.new,
-        HTTP::LogHandler.new,
-        HTTP::CompressHandler.new,
-        self,
-        HTTP::StaticFileHandler.new(static_location),
-      ])
-
-      puts "Listening on http://#{host}:#{port}"
-      puts " static files at: #{static_location}"
-      server.listen
-    end
-
-    def call(context)
-      verb = context.request.method
-      path = context.request.path
-
-      case verb
-      when "get"
-        router = routes[:get]
-      else
-        router = routes[:get]
-      end
-
-      result = router.find(path)
-      if result.found?
-        result.payload.call(Stout::Context.new(context, result.params))
-      else
-        call_next(context)
-      end
-    rescue
-      call_next(context)
-    end
-  end
-
-  module Magic
-    extend self
-
-    macro ecrs(path)
-      content = IO::Memory.new
-      ECR.embed({{path}}, content)
-      content.to_s
-    end
-
-    macro deft
-      module Stout::Magic
-        macro t(name)
-          Stout::Magic.ecrs(\{{__DIR__}} + "/template/" + \{{name}} + ".html.ecr")
-        end
-      end
-
-      class Stout::Server
-        @static_location = \{{__DIR__}} + "/static"
-      end
-    end
-  end
 end
