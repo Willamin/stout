@@ -14,6 +14,10 @@ class Stout::Server
     routes[:get].add(path, block)
   end
 
+  def get(path : String, simple_output : String)
+    routes[:get].add(path, &.<<(simple_output))
+  end
+
   def listen
     server = HTTP::Server.new(host, port, [
       HTTP::ErrorHandler.new,
