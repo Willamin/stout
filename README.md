@@ -20,6 +20,7 @@ Because it's an opinionated, but _flexible_ framework, you can:
 
 ## example
 
+There's a small example over at (willamin/stout-example)[https://github.com/willamin/stout-example]
 
 ## Contributing
 
