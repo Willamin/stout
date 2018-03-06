@@ -24,7 +24,6 @@ class Stout::Server
     ])
 
     puts "Listening on http://#{host}:#{port}"
-    puts " static files at: #{static_location}"
     server.listen
   end
 

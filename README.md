@@ -20,11 +20,6 @@ Because it's an opinionated, but _flexible_ framework, you can:
 
 ## example
 
-You can run a _very_ simple example app:
-1. `$ shards build`
-2. `$ bin/stout-example`
-3. Visit [http://0.0.0.0:8888](http://0.0.0.0:8888)
-
 
 ## Contributing
 
