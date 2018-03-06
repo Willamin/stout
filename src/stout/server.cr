@@ -15,7 +15,8 @@ class Stout::Server
   end
 
   def get(path : String, simple_output : String)
-    routes[:get].add(path, &.<<(simple_output))
+    simple_proc = ->(c : Stout::Context) { c << (simple_output) }
+    routes[:get].add(path, simple_proc)
   end
 
   def listen
