@@ -1,3 +1,5 @@
+require "../../src/stout/magic"
+
 class Page
   include Stout::Magic
 

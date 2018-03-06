@@ -1,3 +1,5 @@
+require "http/server"
+
 class Stout::Context
   @http : HTTP::Server::Context
   property params : Hash(String, String)

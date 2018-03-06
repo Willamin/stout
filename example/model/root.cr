@@ -1,5 +1,6 @@
 require "morganite"
 require "markdown"
+require "../../src/stout/magic"
 
 alias M = Morganite::Morganite
 

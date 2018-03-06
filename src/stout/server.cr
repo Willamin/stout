@@ -1,3 +1,5 @@
+require "http"
+
 class Stout::Server
   include HTTP::Handler
   property static_location = "static"
