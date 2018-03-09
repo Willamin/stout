@@ -5,18 +5,15 @@ class Stout::Server
   property static_location = "static"
   property host = "0.0.0.0"
   property port = 8888
-  property routes = {
-    get:  Routes.new,
-    post: Routes.new,
-  }
+  property routes = Routes.new
 
   def get(path : String, &block : Stout::Context -> Nil)
-    routes[:get].add(path, block)
+    routes.add("get " + path, block)
   end
 
   def get(path : String, simple_output : String)
     simple_proc = ->(c : Stout::Context) { c << (simple_output) }
-    routes[:get].add(path, simple_proc)
+    routes.add("get " + path, simple_proc)
   end
 
   def listen
@@ -33,17 +30,13 @@ class Stout::Server
   end
 
   def call(context)
-    verb = context.request.method
+    verb = context.request.method.downcase
     path = context.request.path
 
-    case verb
-    when "get"
-      router = routes[:get]
-    else
-      router = routes[:get]
-    end
+    route = verb + " " + path
 
-    result = router.find(path)
+    result = routes.find(route)
+
     if result.found?
       result.payload.call(Stout::Context.new(context, result.params))
     else
