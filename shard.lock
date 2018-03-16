@@ -1,5 +1,13 @@
 version: 1.0
 shards:
+  db:
+    github: crystal-lang/crystal-db
+    version: 0.5.0
+
+  granite_orm:
+    github: amberframework/granite-orm
+    version: 0.8.4
+
   morganite:
     github: willamin/morganite
     commit: 6a48db463f069b7ee25a1bd65ab011f9a5ec4e14

@@ -12,8 +12,15 @@ class Stout::Server
   end
 
   def get(path : String, simple_output : String)
-    simple_proc = ->(c : Stout::Context) { c << (simple_output) }
-    routes.add("get " + path, simple_proc)
+    get(->(c : Stout::Context) { c << (simple_output) })
+  end
+
+  def post(path : String, &block : Stout::Context -> Nil)
+    routes.add("post " + path, block)
+  end
+
+  def post(path : String, simple_output : String)
+    post(->(c : Stout::Context) { c << (simple_output) })
   end
 
   def listen
