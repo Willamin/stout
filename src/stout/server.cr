@@ -7,25 +7,34 @@ class Stout::Server
   property host = "localhost"
   property port = 8888
   property routes = Routes.new
+  getter route_names = Hash(Symbol, String).new
+  getter default_route : String = "/"
   STOUT_CACHE_DIR = "#{File.dirname(PROGRAM_NAME)}/../.stout-cache"
   KEY_PATH        = "#{STOUT_CACHE_DIR}/server.key"
   CSR_PATH        = "#{STOUT_CACHE_DIR}/server.csr"
   CERT_PATH       = "#{STOUT_CACHE_DIR}/server.crt"
 
-  def get(path : String, &block : Stout::Context -> Nil)
-    routes.add("get " + path, block)
-  end
+  {% for method in %w(get post) %}
 
-  def get(path : String, simple_output : String)
-    get(->(c : Stout::Context) { c << (simple_output) })
-  end
+    def {{method.id}}(path : String, name : Symbol? = nil, &block : Stout::Context -> Nil)
+      routes.add("/" + {{method}} + path, block)
+      name.try do |name|
+        route_names[name] = path
+      end
+    end
 
-  def post(path : String, &block : Stout::Context -> Nil)
-    routes.add("post " + path, block)
-  end
+    def {{method.id}}(path : String, output : String, name : Symbol? = nil)
+      {{method.id}}(path, ->(c : Stout::Context) { c << (simple_output) }, name)
+    end
 
-  def post(path : String, simple_output : String)
-    post(->(c : Stout::Context) { c << (simple_output) })
+  {% end %}
+
+  def default_route=(path)
+    if default_route.empty?
+      @default_route = path
+    else
+      nil
+    end
   end
 
   def listen
@@ -60,12 +69,11 @@ class Stout::Server
     verb = context.request.method.downcase
     path = context.request.path
 
-    route = verb + " " + path
-
+    route = "/" + verb + path
     result = routes.find(route)
 
     if result.found?
-      result.payload.call(Stout::Context.new(context, result.params))
+      result.payload.call(Stout::Context.new(context, result.params, route_names, default_route))
     else
       call_next(context)
     end
