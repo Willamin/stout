@@ -9,6 +9,7 @@ class Stout::Server
   property routes = Routes.new
   getter route_names = Hash(Symbol, String).new
   getter default_route : String = "/"
+  getter use_ssl = false
   STOUT_CACHE_DIR = "#{File.dirname(PROGRAM_NAME)}/../.stout-cache"
   KEY_PATH        = "#{STOUT_CACHE_DIR}/server.key"
   CSR_PATH        = "#{STOUT_CACHE_DIR}/server.csr"
@@ -37,7 +38,9 @@ class Stout::Server
     end
   end
 
-  def listen
+  def initialize(@use_ssl = false); end
+
+  def ssl_context
     unless Dir.exists?(STOUT_CACHE_DIR)
       FileUtils.mkdir_p(STOUT_CACHE_DIR)
     end
@@ -51,7 +54,10 @@ class Stout::Server
     context.ciphers = OpenSSL::SSL::Context::CIPHERS
     context.private_key = KEY_PATH
     context.certificate_chain = CERT_PATH
+    context
+  end
 
+  def listen
     server = HTTP::Server.new(host, port, [
       HTTP::ErrorHandler.new,
       HTTP::LogHandler.new,
@@ -60,8 +66,13 @@ class Stout::Server
       HTTP::StaticFileHandler.new(static_location, directory_listing: false),
     ])
 
-    puts "Listening on https://#{host}:#{port}"
-    server.tls = context
+    protocol = "http"
+    if use_ssl
+      protocol = "#{protocol}s"
+      server.tls = ssl_context
+    end
+
+    puts "Listening on #{protocol}://#{host}:#{port}"
     server.listen
   end
 
