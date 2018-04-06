@@ -1,4 +1,5 @@
 require "http/server"
+require "json"
 
 class Stout::Context
   @http : HTTP::Server::Context
@@ -13,15 +14,28 @@ class Stout::Context
   property params : Hash(String, String)
 
   # params from the body
-  getter data : Hash(String, String)
+  getter data : JSON::Any?
 
   def initialize(@http, @params, @route_names, @default_route)
-    @data = Hash(String, String).new
     if @http.request.method == "POST"
-      @http.request.body.try do |body|
-        body.as(IO).gets_to_end.split("&").each do |r|
-          k, v = r.split("=")
-          @data[k] ||= URI.unescape(v)
+      data = Hash(String, JSON::Type).new
+      pp @http.request.headers["Content-Type"]
+      case @http.request.headers["Content-Type"].split(";").map &.strip
+      when .includes?("application/x-www-form-urlencoded")
+        @http.request.body.try &.gets_to_end.try do |data_string|
+          HTTP::Params.parse(data_string) do |key, value|
+            data[key] = value
+          end
+        end
+        @data = JSON::Any.new(data)
+      when .includes?("multipart/form-data")
+        HTTP::FormData.parse(@http.request) do |part|
+          data[part.name] = part.body.gets_to_end
+        end
+        @data = JSON::Any.new(data)
+      when .includes?("application/json")
+        @http.request.body.try &.gets_to_end.try do |data_string|
+          @data = JSON.parse(data_string)
         end
       end
     end
