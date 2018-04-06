@@ -113,6 +113,8 @@ class Stout::Server
         if reveal_errors
           context.response << e.inspect
           puts e.inspect
+        else
+          raise e
         end
       end
     else
