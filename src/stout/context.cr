@@ -18,9 +18,11 @@ class Stout::Context
   def initialize(@http, @params, @route_names, @default_route)
     @data = Hash(String, String).new
     if @http.request.method == "POST"
-      @http.request.body.as(IO).gets_to_end.split("&").each do |r|
-        k, v = r.split("=")
-        @data[k] ||= URI.unescape(v)
+      @http.request.body.try do |body|
+        body.as(IO).gets_to_end.split("&").each do |r|
+          k, v = r.split("=")
+          @data[k] ||= URI.unescape(v)
+        end
       end
     end
   end
