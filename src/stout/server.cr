@@ -11,9 +11,9 @@ class Stout::Server
   getter default_route : String = "/"
   getter use_ssl = false
   STOUT_CACHE_DIR = "#{File.dirname(PROGRAM_NAME)}/../.stout-cache"
-  KEY_PATH        = "#{STOUT_CACHE_DIR}/server.key"
-  CSR_PATH        = "#{STOUT_CACHE_DIR}/server.csr"
-  CERT_PATH       = "#{STOUT_CACHE_DIR}/server.crt"
+  KEY_PATH        = ENV["SSL_CERTIFICATE_KEY"]? || "#{STOUT_CACHE_DIR}/server.key"
+  CSR_PATH        = ENV["SSL_CERTIFICATE_SIGNER"]? || "#{STOUT_CACHE_DIR}/server.csr"
+  CERT_PATH       = ENV["SSL_CERTIFICATE"]? || "#{STOUT_CACHE_DIR}/server.crt"
 
   {% for method in %w(get post) %}
 
@@ -45,13 +45,35 @@ class Stout::Server
       FileUtils.mkdir_p(STOUT_CACHE_DIR)
     end
 
-    Stout::Fog.fog(KEY_PATH, "key") { `openssl genrsa -out #{KEY_PATH} 1024` }
-    Stout::Fog.fog(CSR_PATH, "csr") { `openssl req -new -subj "/CN=#{host}" -key #{KEY_PATH} -out #{CSR_PATH}` }
-    Stout::Fog.fog(CERT_PATH, "cert") { `openssl x509 -req -days 365 -in #{CSR_PATH} -signkey #{KEY_PATH} -out #{CERT_PATH}` }
+    if !File.exists?(KEY_PATH)
+      if ENV["SSL_CERTIFICATE_KEY"]?
+        raise "looking for ssl certificate key in #{KEY_PATH}. couldn't find it."
+      end
+      `openssl genrsa -out #{KEY_PATH} 2048`
+    end
+
+    if !File.exists?(CERT_PATH)
+      if ENV["SSL_CERTIFICATE"]?
+        raise "looking for ssl certificate in #{CERT_PATH}. couldn't find it."
+      end
+
+      if !File.exists?(CSR_PATH)
+        if ENV["SSL_CERTIFICATE_SIGNER"]?
+          raise "looking for ssl certificate signer in #{CSR_PATH}. couldn't find it."
+        end
+        `openssl req -new -subj "/CN=#{host}" -key #{KEY_PATH} -out #{CSR_PATH}`
+      end
+
+      `openssl x509 -req -days 365 -in #{CSR_PATH} -signkey #{KEY_PATH} -out #{CERT_PATH}`
+
+      unless ENV["SSL_CERTIFICATE_SIGNER"]?
+        `rm #{CSR_PATH}`
+      end
+    end
 
     context = OpenSSL::SSL::Context::Server.new
     context.add_options(OpenSSL::SSL::Options::NO_TLS_V1 | OpenSSL::SSL::Options::NO_TLS_V1_1 | OpenSSL::SSL::Options::NO_SSL_V2 | OpenSSL::SSL::Options::NO_SSL_V3)
-    context.ciphers = OpenSSL::SSL::Context::CIPHERS
+    # context.ciphers = OpenSSL::SSL::Context::CIPHERS
     context.private_key = KEY_PATH
     context.certificate_chain = CERT_PATH
     context
