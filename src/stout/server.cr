@@ -1,20 +1,29 @@
 require "http"
 require "file_utils"
 
+module Stout
+  enum Env
+    Development
+    Test
+    Production
+  end
+end
+
 class Stout::Server
   include HTTP::Handler
+  STOUT_ENV       = ENV["STOUT_ENV"]?.try { |e| Stout::Env.parse?(e) } || Stout::Env::Dev
+  STOUT_CACHE_DIR = "#{File.dirname(PROGRAM_NAME)}/../.stout-cache"
+  KEY_PATH        = ENV["SSL_CERTIFICATE_KEY"]? || "#{STOUT_CACHE_DIR}/server.key"
+  CSR_PATH        = ENV["SSL_CERTIFICATE_SIGNER"]? || "#{STOUT_CACHE_DIR}/server.csr"
+  CERT_PATH       = ENV["SSL_CERTIFICATE"]? || "#{STOUT_CACHE_DIR}/server.crt"
+  HOST            = (ENV["HOST"]? || "localhost").as String
+  PORT            = ((ENV["PORT"]?.try &.to_i) || 8888).as Int32
   property static_location = "static"
-  property host = "localhost"
-  property port = 8888
   property routes = Routes.new
   getter route_names = Hash(Symbol, String).new
   getter default_route : String = "/"
   getter use_ssl = false
   getter reveal_errors = false
-  STOUT_CACHE_DIR = "#{File.dirname(PROGRAM_NAME)}/../.stout-cache"
-  KEY_PATH        = ENV["SSL_CERTIFICATE_KEY"]? || "#{STOUT_CACHE_DIR}/server.key"
-  CSR_PATH        = ENV["SSL_CERTIFICATE_SIGNER"]? || "#{STOUT_CACHE_DIR}/server.csr"
-  CERT_PATH       = ENV["SSL_CERTIFICATE"]? || "#{STOUT_CACHE_DIR}/server.crt"
 
   {% for method in %w(get post) %}
 
@@ -62,7 +71,7 @@ class Stout::Server
         if ENV["SSL_CERTIFICATE_SIGNER"]?
           raise "looking for ssl certificate signer in #{CSR_PATH}. couldn't find it."
         end
-        `openssl req -new -subj "/CN=#{host}" -key #{KEY_PATH} -out #{CSR_PATH}`
+        `openssl req -new -subj "/CN=#{HOST}" -key #{KEY_PATH} -out #{CSR_PATH}`
       end
 
       `openssl x509 -req -days 365 -in #{CSR_PATH} -signkey #{KEY_PATH} -out #{CERT_PATH}`
@@ -81,7 +90,7 @@ class Stout::Server
   end
 
   def listen
-    server = HTTP::Server.new(host, port, [
+    server = HTTP::Server.new(HOST, PORT, [
       HTTP::ErrorHandler.new,
       HTTP::LogHandler.new,
       HTTP::CompressHandler.new,
@@ -95,7 +104,7 @@ class Stout::Server
       server.tls = ssl_context
     end
 
-    puts "Listening on #{protocol}://#{host}:#{port}"
+    puts "Listening on #{protocol}://#{HOST}:#{PORT}"
     server.listen
   end
 
