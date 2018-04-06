@@ -111,7 +111,7 @@ class Stout::Server
         result.payload.call(Stout::Context.new(context, result.params, route_names, default_route))
       rescue e
         if reveal_errors
-          context << e.inspect
+          context.response << e.inspect
           puts e.inspect
         end
       end
