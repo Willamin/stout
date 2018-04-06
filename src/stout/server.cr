@@ -10,6 +10,7 @@ class Stout::Server
   getter route_names = Hash(Symbol, String).new
   getter default_route : String = "/"
   getter use_ssl = false
+  getter reveal_errors = false
   STOUT_CACHE_DIR = "#{File.dirname(PROGRAM_NAME)}/../.stout-cache"
   KEY_PATH        = ENV["SSL_CERTIFICATE_KEY"]? || "#{STOUT_CACHE_DIR}/server.key"
   CSR_PATH        = ENV["SSL_CERTIFICATE_SIGNER"]? || "#{STOUT_CACHE_DIR}/server.csr"
@@ -38,7 +39,7 @@ class Stout::Server
     end
   end
 
-  def initialize(@use_ssl = false); end
+  def initialize(@use_ssl = false, @reveal_errors = false); end
 
   def ssl_context
     unless Dir.exists?(STOUT_CACHE_DIR)
@@ -106,7 +107,14 @@ class Stout::Server
     result = routes.find(route)
 
     if result.found?
-      result.payload.call(Stout::Context.new(context, result.params, route_names, default_route))
+      begin
+        result.payload.call(Stout::Context.new(context, result.params, route_names, default_route))
+      rescue e
+        if reveal_errors
+          context << e.inspect
+          puts e.inspect
+        end
+      end
     else
       call_next(context)
     end
