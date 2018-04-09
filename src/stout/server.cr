@@ -11,13 +11,15 @@ end
 
 class Stout::Server
   include HTTP::Handler
+
   STOUT_ENV       = ENV["STOUT_ENV"]?.try { |e| Stout::Env.parse?(e) } || Stout::Env::Development
-  STOUT_CACHE_DIR = "#{File.dirname(PROGRAM_NAME)}/../.stout-cache"
+  STOUT_CACHE_DIR = ENV["STOUT_CACHE"]? || "#{File.dirname(PROGRAM_NAME)}/../.stout-cache"
   KEY_PATH        = ENV["SSL_CERTIFICATE_KEY"]? || "#{STOUT_CACHE_DIR}/server.key"
   CSR_PATH        = ENV["SSL_CERTIFICATE_SIGNER"]? || "#{STOUT_CACHE_DIR}/server.csr"
   CERT_PATH       = ENV["SSL_CERTIFICATE"]? || "#{STOUT_CACHE_DIR}/server.crt"
-  HOST            = (ENV["HOST"]? || "localhost").as String
+  HOST            = ENV["HOST"]? || "localhost"
   PORT            = ((ENV["PORT"]?.try &.to_i) || 8888).as Int32
+
   property static_location = "static"
   property routes = Routes.new
   getter route_names = Hash(Symbol, String).new
@@ -25,19 +27,13 @@ class Stout::Server
   getter use_ssl = false
   getter reveal_errors = false
 
-  {% for method in %w(get post) %}
-
+  {% for method in %w(get post patch put delete) %}
     def {{method.id}}(path : String, name : Symbol? = nil, &block : Stout::Context -> Nil)
       routes.add("/" + {{method}} + path, block)
       name.try do |name|
         route_names[name] = path
       end
     end
-
-    def {{method.id}}(path : String, output : String, name : Symbol? = nil)
-      {{method.id}}(path, ->(c : Stout::Context) { c << (simple_output) }, name)
-    end
-
   {% end %}
 
   def default_route=(path)
