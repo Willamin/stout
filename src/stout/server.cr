@@ -4,14 +4,14 @@ require "file_utils"
 module Stout
   enum Env
     Development
-    Test
+    Testing
     Production
   end
 end
 
 class Stout::Server
   include HTTP::Handler
-  STOUT_ENV       = ENV["STOUT_ENV"]?.try { |e| Stout::Env.parse?(e) } || Stout::Env::Dev
+  STOUT_ENV       = ENV["STOUT_ENV"]?.try { |e| Stout::Env.parse?(e) } || Stout::Env::Development
   STOUT_CACHE_DIR = "#{File.dirname(PROGRAM_NAME)}/../.stout-cache"
   KEY_PATH        = ENV["SSL_CERTIFICATE_KEY"]? || "#{STOUT_CACHE_DIR}/server.key"
   CSR_PATH        = ENV["SSL_CERTIFICATE_SIGNER"]? || "#{STOUT_CACHE_DIR}/server.csr"
