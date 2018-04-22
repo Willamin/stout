@@ -87,12 +87,11 @@ class Stout::Server
   end
 
   def listen
-    handler_list : Array(HTTP::Handler) = [
-      HTTP::ErrorHandler.new,
-      HTTP::LogHandler.new,
-      HTTP::CompressHandler.new,
-      self,
-    ]
+    handler_list = [] of HTTP::Handler
+    handler_list << HTTP::ErrorHandler.new
+    handler_list << HTTP::LogHandler.new
+    handler_list << HTTP::CompressHandler.new
+    handler_list << self
     if use_static
       handler_list << HTTP::StaticFileHandler.new(static_location, directory_listing: false)
     end
