@@ -26,6 +26,7 @@ class Stout::Server
   getter default_route : String = "/"
   getter use_ssl = false
   getter reveal_errors = false
+  getter use_static = true
 
   {% for method in %w(get post patch put delete) %}
     def {{method.id}}(path : String, name : Symbol? = nil, &block : Stout::Context -> Nil)
@@ -44,7 +45,7 @@ class Stout::Server
     end
   end
 
-  def initialize(@use_ssl = false, @reveal_errors = false); end
+  def initialize(@use_ssl = false, @reveal_errors = false, @use_static = true); end
 
   def ssl_context
     unless Dir.exists?(STOUT_CACHE_DIR)
@@ -86,13 +87,17 @@ class Stout::Server
   end
 
   def listen
-    server = HTTP::Server.new(HOST, PORT, [
+    handler_list = [
       HTTP::ErrorHandler.new,
       HTTP::LogHandler.new,
       HTTP::CompressHandler.new,
       self,
-      HTTP::StaticFileHandler.new(static_location, directory_listing: false),
-    ])
+    ]
+    if use_static
+      handler_list << HTTP::StaticFileHandler.new(static_location, directory_listing: false)
+    end
+
+    server = HTTP::Server.new(HOST, PORT, handler_list)
 
     protocol = "http"
     if use_ssl
