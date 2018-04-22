@@ -87,7 +87,7 @@ class Stout::Server
   end
 
   def listen
-    handler_list = [
+    handler_list : Array(HTTP::Handler) = [
       HTTP::ErrorHandler.new,
       HTTP::LogHandler.new,
       HTTP::CompressHandler.new,
