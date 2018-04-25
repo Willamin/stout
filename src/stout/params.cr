@@ -47,6 +47,6 @@ class Stout::Params
   end
 
   def [](name : String)
-    self[name].not_nil!
+    self[name]?.not_nil!
   end
 end
