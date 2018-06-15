@@ -4,14 +4,10 @@ version: 0.1.1
 authors:
   - Will Lewis <will@wflewis.com>
 
-crystal: 24.1
+crystal: 0.25
 
 license: MIT
 
 dependencies:
-  radix:
-    github: luislavena/radix
-  morganite:
-    github: willamin/morganite
   granite_orm:
     github: amberframework/granite-orm

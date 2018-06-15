@@ -6,13 +6,5 @@ shards:
 
   granite_orm:
     github: amberframework/granite-orm
-    version: 0.8.4
-
-  morganite:
-    github: willamin/morganite
-    commit: 6a48db463f069b7ee25a1bd65ab011f9a5ec4e14
-
-  radix:
-    github: luislavena/radix
-    version: 0.3.8
+    version: 0.9.1
 
