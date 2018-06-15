@@ -9,5 +9,8 @@ crystal: 0.25
 license: MIT
 
 dependencies:
-  granite_orm:
-    github: amberframework/granite-orm
+  granite:
+    github: amberframework/granite
+  radix:
+    github: luislavena/radix
+    version: 0.3.8
