@@ -31,6 +31,9 @@ class Stout::Server
   {% for method in %w(get post patch put delete) %}
     def {{method.id}}(path : String, name : Symbol? = nil, &block : Stout::Context -> Nil)
       routes.add("/" + {{method}} + path, block)
+      {% if method == "get" %}
+        routes.add("/head" + path, block)
+      {% end %}
       name.try do |name|
         route_names[name] = path
       end
