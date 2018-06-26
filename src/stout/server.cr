@@ -96,7 +96,7 @@ class Stout::Server
       handler_list << HTTP::StaticFileHandler.new(static_location, directory_listing: false)
     end
 
-    server = HTTP::Server.new(HOST, PORT, handler_list)
+    server = HTTP::Server.new(handler_list)
 
     protocol = "http"
     if use_ssl
@@ -105,7 +105,7 @@ class Stout::Server
     end
 
     puts "Listening on #{protocol}://#{HOST}:#{PORT}"
-    server.listen
+    server.listen(HOST, PORT)
   end
 
   def call(context)
