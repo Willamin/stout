@@ -50,7 +50,7 @@ class Stout::Server
 
   def initialize(@use_ssl = false, @reveal_errors = false, @use_static = true); end
 
-  def ssl_context
+  def ssl_context : OpenSSL::SSL::Context::Server
     unless Dir.exists?(STOUT_CACHE_DIR)
       FileUtils.mkdir_p(STOUT_CACHE_DIR)
     end
@@ -101,12 +101,19 @@ class Stout::Server
 
     server = HTTP::Server.new(handler_list)
 
-    protocol = "http"
+    listen_message!("http")
+
+    if use_ssl
+      server.bind_ssl(HOST, PORT, ssl_context)
+    else
+      server.listen(HOST, PORT)
+    end
+  end
+
+  def listen_message!(protocol : String)
     if use_ssl
       protocol = "#{protocol}s"
-      server.tls = ssl_context
     end
-
     puts "Listening on #{protocol}://#{HOST}:#{PORT}"
     server.listen(HOST, PORT)
   end
