@@ -27,6 +27,7 @@ class Stout::Server
   getter use_ssl = false
   getter reveal_errors = false
   getter use_static = true
+  getter rewrites = Hash(String, String).new
 
   {% for method in %w(get post patch put delete) %}
     def {{method.id}}(path : String, name : Symbol? = nil, &block : Stout::Context -> Nil)
@@ -115,14 +116,32 @@ class Stout::Server
       protocol = "#{protocol}s"
     end
     puts "Listening on #{protocol}://#{HOST}:#{PORT}"
-    server.listen(HOST, PORT)
+  end
+
+  def rewrite(path, new_path)
+    rewrites[path] = new_path
   end
 
   def call(context)
     verb = context.request.method.downcase
     path = context.request.path
 
+    previously_rewritten = [] of String
+    while new_path = rewrites[path]?
+      if previously_rewritten.includes?(path)
+        path = previously_rewritten[0]
+        break
+      end
+      previously_rewritten << path
+
+      puts "#{path} -> #{new_path}"
+
+      path = new_path
+    end
+    context.request.path = path
+
     route = "/" + verb + path
+
     result = routes.find(route)
 
     if result.found?
