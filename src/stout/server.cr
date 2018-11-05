@@ -105,7 +105,7 @@ class Stout::Server
     listen_message!("http")
 
     if use_ssl
-      server.bind_ssl(HOST, PORT, ssl_context)
+      server.bind_tls(HOST, PORT, ssl_context)
     else
       server.listen(HOST, PORT)
     end
