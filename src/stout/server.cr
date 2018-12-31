@@ -17,8 +17,13 @@ class Stout::Server
   KEY_PATH        = ENV["SSL_CERTIFICATE_KEY"]? || "#{STOUT_CACHE_DIR}/server.key"
   CSR_PATH        = ENV["SSL_CERTIFICATE_SIGNER"]? || "#{STOUT_CACHE_DIR}/server.csr"
   CERT_PATH       = ENV["SSL_CERTIFICATE"]? || "#{STOUT_CACHE_DIR}/server.crt"
-  HOST            = ENV["HOST"]? || "localhost"
-  PORT            = ((ENV["PORT"]?.try &.to_i) || 8888).as Int32
+  HOST            = ENV["HOST"]? || (
+    case STOUT_ENV
+    when Stout::Env::Production then "0.0.0.0"
+    else                             "localhost"
+    end
+  )
+  PORT = ((ENV["PORT"]?.try &.to_i) || 8888).as Int32
 
   property static_location = "static"
   property routes = Routes.new
