@@ -22,22 +22,24 @@ class Stout::Params
 
   def parse_post
     post_params = Hash(String, JSON::Any).new
-    case @context.request.headers["Content-Type"].split(";").map &.strip
-    when .includes?("application/x-www-form-urlencoded")
-      @context.request.body.try &.gets_to_end.try do |data_string|
-        HTTP::Params.parse(data_string) do |key, value|
-          post_params[key] = JSON::Any.new(value)
+    @context.request.headers["Content-Type"]?.try do |content_types|
+      case content_types.split(";").map &.strip
+      when .includes?("application/x-www-form-urlencoded")
+        @context.request.body.try &.gets_to_end.try do |data_string|
+          HTTP::Params.parse(data_string) do |key, value|
+            post_params[key] = JSON::Any.new(value)
+          end
         end
-      end
-      @post_params = JSON::Any.new(post_params)
-    when .includes?("multipart/form-data")
-      HTTP::FormData.parse(@context.request) do |part|
-        post_params[part.name] = JSON::Any.new(part.body.gets_to_end)
-      end
-      @post_params = JSON::Any.new(post_params)
-    when .includes?("application/json")
-      @context.request.body.try &.gets_to_end.try do |data_string|
-        @post_params = JSON.parse(data_string)
+        @post_params = JSON::Any.new(post_params)
+      when .includes?("multipart/form-data")
+        HTTP::FormData.parse(@context.request) do |part|
+          post_params[part.name] = JSON::Any.new(part.body.gets_to_end)
+        end
+        @post_params = JSON::Any.new(post_params)
+      when .includes?("application/json")
+        @context.request.body.try &.gets_to_end.try do |data_string|
+          @post_params = JSON.parse(data_string)
+        end
       end
     end
   end
