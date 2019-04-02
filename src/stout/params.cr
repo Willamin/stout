@@ -13,7 +13,9 @@ class Stout::Params
   # params from the querystring
   getter get_params : Hash(String, String)?
 
-  def initialize(@context, @route_params)
+  @body : String
+
+  def initialize(@context, @body, @route_params)
     case @context.request.method
     when "POST"
       parse_post
@@ -25,10 +27,8 @@ class Stout::Params
     @context.request.headers["Content-Type"]?.try do |content_types|
       case content_types.split(";").map &.strip
       when .includes?("application/x-www-form-urlencoded")
-        @context.request.body.try &.gets_to_end.try do |data_string|
-          HTTP::Params.parse(data_string) do |key, value|
-            post_params[key] = JSON::Any.new(value)
-          end
+        HTTP::Params.parse(@body) do |key, value|
+          post_params[key] = JSON::Any.new(value)
         end
         @post_params = JSON::Any.new(post_params)
       when .includes?("multipart/form-data")
@@ -37,9 +37,7 @@ class Stout::Params
         end
         @post_params = JSON::Any.new(post_params)
       when .includes?("application/json")
-        @context.request.body.try &.gets_to_end.try do |data_string|
-          @post_params = JSON.parse(data_string)
-        end
+        @post_params = JSON.parse(@body)
       end
     end
   end

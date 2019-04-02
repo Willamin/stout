@@ -12,12 +12,23 @@ class Stout::Context
 
   getter params : Stout::Params
 
+  # memoized body
+  @body : String?
+
   def initialize(@http, route_params, @route_names, @default_route)
-    @params = Stout::Params.new(@http, route_params)
+    @params = Stout::Params.new(@http, body, route_params)
   end
 
   def <<(something)
     @http.response << (something)
+  end
+
+  def body : String
+    if b = @body
+      return b
+    end
+
+    @body = @http.request.body.try(&.gets_to_end) || ""
   end
 
   def call_next
