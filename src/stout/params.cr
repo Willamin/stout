@@ -1,4 +1,5 @@
 require "http/server"
+require "http/params"
 require "json"
 
 class Stout::Params
@@ -19,7 +20,17 @@ class Stout::Params
     case @context.request.method
     when "POST"
       parse_post
+    when "GET"
+      parse_get
     end
+  end
+
+  def parse_get
+    get_params = Hash(String, String).new
+    @context.request.query_params.each do |k, v|
+      get_params[k] = v
+    end
+    @get_params = get_params
   end
 
   def parse_post
@@ -43,7 +54,7 @@ class Stout::Params
   end
 
   def []?(name : String) : String | JSON::Any | Nil
-    route_params.try &.[name]? || post_params.try &.[name]? || nil
+    route_params.try &.[name]? || post_params.try &.[name]? || get_params.try &.[name]? || nil
   end
 
   def [](name : String)
