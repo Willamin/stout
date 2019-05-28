@@ -33,6 +33,8 @@ class Stout::Server
   getter reveal_errors = false
   getter use_static = true
   getter rewrites = Hash(String, String).new
+  getter use_missing = false
+  getter missing : (Stout::Context -> Nil) = (->(c : Stout::Context) { c << "SNot Found" })
 
   {% for method in %w(get post patch put delete) %}
     def {{method.id}}(path : String, name : Symbol? = nil, &block : Stout::Context -> Nil)
@@ -46,6 +48,10 @@ class Stout::Server
     end
   {% end %}
 
+  def set_missing(&block : Stout::Context -> Nil)
+    @missing = block
+  end
+
   def default_route=(path)
     if default_route.empty?
       @default_route = path
@@ -54,7 +60,7 @@ class Stout::Server
     end
   end
 
-  def initialize(@use_ssl = false, @reveal_errors = false, @use_static = true); end
+  def initialize(@use_ssl = false, @reveal_errors = false, @use_static = true, @use_missing = false); end
 
   def ssl_context : OpenSSL::SSL::Context::Server
     unless Dir.exists?(STOUT_CACHE_DIR)
@@ -105,7 +111,14 @@ class Stout::Server
       handler_list << HTTP::StaticFileHandler.new(static_location, directory_listing: false)
     end
 
-    server = HTTP::Server.new(handler_list)
+    if use_missing
+      server = HTTP::Server.new(handler_list) do |context|
+        c = Stout::Context.new(context, nil, route_names, default_route)
+        missing.call(c)
+      end
+    else
+      server = HTTP::Server.new(handler_list)
+    end
 
     listen_message!("http")
 
